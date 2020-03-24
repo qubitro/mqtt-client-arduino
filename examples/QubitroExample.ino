@@ -55,7 +55,6 @@ void loop()
     mqttClient.beginMessage(deviceID);   
     mqttClient.print("{\"Temp\":33}"); //insert key value JSON string object to send
     mqttClient.endMessage();                
-
     delay(2000);   //wait 2 seconds
 }
 
