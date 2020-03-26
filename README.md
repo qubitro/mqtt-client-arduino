@@ -5,7 +5,10 @@ Client library that implements the MQTT protocol, customized for Qubitro IoT pla
 
 [![GitHub version](https://badge.fury.io/gh/qubitro%2Fmqtt-client-arduino.svg)](https://badge.fury.io/gh/qubitro%2Fmqtt-client-arduino)
 
-> Soon available on Arduino Library Manager
+> Now available on Arduino Library Manager
+
+![Alt Text](https://raw.github.com/qubitro/mqtt-client-arduino/master/screenshot-library-manager.png)
+
 
 ### How to use
 
