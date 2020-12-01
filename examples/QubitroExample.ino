@@ -2,6 +2,8 @@
 #include <QubitroMqttClient.h>
 #include <WiFiNINA.h> 
 
+#define PERIOD 5000
+
 WiFiClient wifiClient;
 QubitroMqttClient mqttClient(wifiClient);
 
@@ -11,8 +13,10 @@ char pass[] = "WiFi_PASSWORD";
 
 char deviceID[] = "PASTE_DEVICE_ID_HERE";
 char deviceToken[] = "PASTE_DEVICE_TOKEN_HERE";
-char host[] = "PASTE_QUBITRO_BROKER_IP";
+char host[] = "broker.qubitro.com";
 int port = 1883;
+
+unsigned long next = 0;
 
 void setup() 
 {
@@ -21,14 +25,14 @@ void setup()
   while (!Serial) {;} 
   
   // connect to Wifi network:
-  Serial.println("Connecting to WiFi...");
-  
-  while (WiFi.begin(ssid, pass) != WL_CONNECTED) 
+  Serial.print("Connecting to WiFi...");
+  WiFi.begin(ssid, pass);
+  while (WiFi.status() != WL_CONNECTED) 
   {
     Serial.print(".");
     delay(1000);
   }
-  Serial.println("Connected to the WiFi");
+  Serial.println("\tConnected to the WiFi !");
 
   // You need to provide device id and device token
    mqttClient.setId(deviceID);
@@ -49,13 +53,20 @@ void setup()
                                       
   mqttClient.subscribe(deviceID);
 }
+
 void loop() 
 {
-    mqttClient.poll();   
-    mqttClient.beginMessage(deviceID);   
-    mqttClient.print("{\"Temp\":33}"); //insert key value JSON string object to send
-    mqttClient.endMessage();                
-    delay(2000);   //wait 2 seconds
+  mqttClient.poll();
+  if(millis() > next) {
+    next = millis() + PERIOD;
+    // Change if possible to have a message over 256 characters
+    static char payload[256];
+    snprintf(payload, sizeof(payload)-1, "{\"temp\":%d}", 36);
+    mqttClient.beginMessage(deviceID);
+    // Send value
+    mqttClient.print(payload); 
+    mqttClient.endMessage();  
+  }
 }
 
 void receivedMessage(int messageSize) 
