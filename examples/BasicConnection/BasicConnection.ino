@@ -1,11 +1,28 @@
 
 #include <QubitroMqttClient.h>
-#include <WiFiNINA.h> 
 
+#define USE_SSL 1
 #define PERIOD 5000
 
+#ifdef ARDUINO_ARCH_ESP32
+#include <WiFi.h>
+#if USE_SSL
+#include <WiFiClientSecure.h>
+WiFiClientSecure wifiClient;
+#else
 WiFiClient wifiClient;
-QubitroMqttClient mqttClient(wifiClient);
+#endif
+#else
+#include <WiFiNINA.h>
+#if USE_SSL
+WiFiSSLClient wifiClient;
+#else
+WiFiClient wifiClient;
+#endif
+#endif
+
+
+QubitroMqttClient mqttClient(wifiClient); 
 
 // WiFi Credentials
 char ssid[] = "WiFi_ID";   
@@ -13,7 +30,7 @@ char pass[] = "WiFi_PASSWORD";
 
 char deviceID[] = "PASTE_DEVICE_ID_HERE";
 char deviceToken[] = "PASTE_DEVICE_TOKEN_HERE";
-char host[] = "broker.qubitro.com";
+const char host[] = "broker.qubitro.com";
 int port = 1883;
 
 unsigned long next = 0;
@@ -39,6 +56,14 @@ void setup()
    mqttClient.setDeviceIdToken(deviceID, deviceToken);
 
   Serial.println("Connecting to Qubitro...");
+
+  #if USE_SSL
+  #ifdef ARDUINO_ARCH_ESP32
+  // Remove if cert verification is added
+  wifiClient.setInsecure();
+  #endif
+  port = 8883;
+  #endif
 
   if (!mqttClient.connect(host, port)) 
   {
@@ -66,6 +91,8 @@ void loop()
     // Send value
     mqttClient.print(payload); 
     mqttClient.endMessage();  
+    Serial.print("Publishing new data-> ");
+    Serial.println(payload);
   }
 }
 
